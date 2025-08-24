@@ -1,13 +1,32 @@
 import React, { useState, useMemo } from 'react';
-import { Search, MapPin, Calendar, DollarSign, Edit3 } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Box,
+  Container,
+  Typography,
+  TextField,
+  InputAdornment,
+  Tabs,
+  Tab,
+  Paper,
+  AppBar,
+  Toolbar,
+} from '@mui/material';
+import { Search } from '@mui/icons-material';
+import { styled } from '@mui/material/styles';
 import TaskCard from '@/components/tasks/TaskCard';
 import TaskDetails from '@/components/tasks/TaskDetails';
 import TaskMap from '@/components/tasks/TaskMap';
+
+const StyledAppBar = styled(AppBar)(({ theme }) => ({
+  background: 'linear-gradient(135deg, #0ea5e9, #06b6d4)',
+  marginBottom: theme.spacing(3),
+}));
+
+const StyledPaper = styled(Paper)(({ theme }) => ({
+  height: 'calc(100vh - 200px)',
+  overflow: 'auto',
+  padding: theme.spacing(2),
+}));
 
 // Mock data for demonstration
 const mockTasks = [
@@ -63,8 +82,10 @@ const mockTasks = [
 
 const MyTasks = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeFilter, setActiveFilter] = useState('all');
+  const [activeFilter, setActiveFilter] = useState(0);
   const [selectedTask, setSelectedTask] = useState(mockTasks[0]);
+
+  const filterOptions = ['All', 'Posted', 'Requests', 'Assigned', 'Pending', 'Completed'];
 
   const filteredTasks = useMemo(() => {
     let tasks = mockTasks;
@@ -78,18 +99,18 @@ const MyTasks = () => {
     }
 
     // Filter by status
-    if (activeFilter !== 'all') {
+    if (activeFilter !== 0) {
       tasks = tasks.filter(task => {
         switch (activeFilter) {
-          case 'posted':
+          case 1: // Posted
             return task.status === 'open';
-          case 'requests':
+          case 2: // Requests
             return true; // Placeholder for requests logic
-          case 'assigned':
+          case 3: // Assigned
             return task.status === 'assigned';
-          case 'pending':
+          case 4: // Pending
             return task.status === 'pending';
-          case 'completed':
+          case 5: // Completed
             return task.status === 'completed';
           default:
             return true;
@@ -100,81 +121,108 @@ const MyTasks = () => {
     return tasks;
   }, [searchTerm, activeFilter]);
 
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setActiveFilter(newValue);
+  };
+
   return (
-    <div className="min-h-screen bg-background">
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
       {/* Header */}
-      <header className="bg-gradient-primary text-primary-foreground p-6 shadow-elevated">
-        <h1 className="text-3xl font-bold">My Tasks</h1>
-        <p className="text-primary-foreground/80 mt-2">Manage and track your tasks efficiently</p>
-      </header>
+      <StyledAppBar position="static" elevation={0}>
+        <Toolbar>
+          <Box>
+            <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold', color: 'white' }}>
+              My Tasks
+            </Typography>
+            <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.8)', mt: 0.5 }}>
+              Manage and track your tasks efficiently
+            </Typography>
+          </Box>
+        </Toolbar>
+      </StyledAppBar>
 
-      {/* Main Content */}
-      <div className="flex flex-col lg:flex-row h-[calc(100vh-140px)]">
-        {/* Left Pane - Task List */}
-        <div className="w-full lg:w-1/2 p-6 border-r border-border overflow-y-auto">
-          {/* Search */}
-          <div className="relative mb-6">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-            <Input
-              placeholder="Search tasks by title, location..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-
-          {/* Filter Tabs */}
-          <Tabs value={activeFilter} onValueChange={setActiveFilter} className="mb-6">
-            <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6 gap-1">
-              <TabsTrigger value="all">All</TabsTrigger>
-              <TabsTrigger value="posted">Posted</TabsTrigger>
-              <TabsTrigger value="requests">Requests</TabsTrigger>
-              <TabsTrigger value="assigned">Assigned</TabsTrigger>
-              <TabsTrigger value="pending">Pending</TabsTrigger>
-              <TabsTrigger value="completed">Completed</TabsTrigger>
-            </TabsList>
-          </Tabs>
-
-          {/* Task Cards */}
-          <div className="space-y-4">
-            {filteredTasks.map((task) => (
-              <TaskCard
-                key={task.id}
-                task={task}
-                isSelected={selectedTask?.id === task.id}
-                onClick={() => setSelectedTask(task)}
+      <Container maxWidth="xl">
+        <Box sx={{ 
+          display: 'grid', 
+          gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, 
+          gap: 3 
+        }}>
+          {/* Left Pane - Task List */}
+          <Box>
+            <StyledPaper elevation={1}>
+              {/* Search */}
+              <TextField
+                fullWidth
+                placeholder="Search tasks by title, location..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Search color="action" />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{ mb: 3 }}
               />
-            ))}
-            {filteredTasks.length === 0 && (
-              <div className="text-center py-8 text-muted-foreground">
-                No tasks found matching your criteria.
-              </div>
+
+              {/* Filter Tabs */}
+              <Tabs
+                value={activeFilter}
+                onChange={handleTabChange}
+                variant="scrollable"
+                scrollButtons="auto"
+                sx={{ mb: 3, borderBottom: 1, borderColor: 'divider' }}
+              >
+                {filterOptions.map((option, index) => (
+                  <Tab key={option} label={option} />
+                ))}
+              </Tabs>
+
+              {/* Task Cards */}
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {filteredTasks.map((task) => (
+                  <TaskCard
+                    key={task.id}
+                    task={task}
+                    isSelected={selectedTask?.id === task.id}
+                    onClick={() => setSelectedTask(task)}
+                  />
+                ))}
+                {filteredTasks.length === 0 && (
+                  <Box sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>
+                    <Typography>No tasks found matching your criteria.</Typography>
+                  </Box>
+                )}
+              </Box>
+            </StyledPaper>
+          </Box>
+
+          {/* Right Pane - Task Details & Map */}
+          <Box>
+            {selectedTask ? (
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, height: 'calc(100vh - 200px)' }}>
+                {/* Task Details */}
+                <Paper elevation={1} sx={{ p: 3, flex: '0 0 auto' }}>
+                  <TaskDetails task={selectedTask} />
+                </Paper>
+
+                {/* Map */}
+                <Paper elevation={1} sx={{ p: 3, flex: 1, minHeight: 300 }}>
+                  <TaskMap task={selectedTask} />
+                </Paper>
+              </Box>
+            ) : (
+              <StyledPaper elevation={1}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                  <Typography color="text.secondary">Select a task to view details</Typography>
+                </Box>
+              </StyledPaper>
             )}
-          </div>
-        </div>
-
-        {/* Right Pane - Task Details & Map */}
-        <div className="w-full lg:w-1/2 flex flex-col">
-          {selectedTask ? (
-            <>
-              {/* Task Details */}
-              <div className="p-6 border-b border-border">
-                <TaskDetails task={selectedTask} />
-              </div>
-
-              {/* Map */}
-              <div className="flex-1 p-6">
-                <TaskMap task={selectedTask} />
-              </div>
-            </>
-          ) : (
-            <div className="flex items-center justify-center h-full text-muted-foreground">
-              Select a task to view details
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+          </Box>
+        </Box>
+      </Container>
+    </Box>
   );
 };
 

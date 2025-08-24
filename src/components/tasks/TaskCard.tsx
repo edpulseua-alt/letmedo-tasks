@@ -1,8 +1,19 @@
 import React from 'react';
-import { MapPin, Calendar, DollarSign, AlertCircle } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
+import {
+  Card,
+  CardContent,
+  Typography,
+  Chip,
+  Box,
+  Stack,
+} from '@mui/material';
+import {
+  LocationOn,
+  CalendarToday,
+  AttachMoney,
+  PriorityHigh,
+} from '@mui/icons-material';
+import { styled } from '@mui/material/styles';
 
 interface Task {
   id: string;
@@ -20,66 +31,101 @@ interface TaskCardProps {
   onClick: () => void;
 }
 
+const StyledCard = styled(Card, {
+  shouldForwardProp: (prop) => prop !== 'isSelected',
+})<{ isSelected: boolean }>(({ theme, isSelected }) => ({
+  cursor: 'pointer',
+  transition: 'all 0.2s ease-in-out',
+  border: isSelected ? `2px solid ${theme.palette.primary.main}` : '1px solid transparent',
+  backgroundColor: isSelected ? 'rgba(14, 165, 233, 0.02)' : 'white',
+  '&:hover': {
+    transform: 'translateY(-2px)',
+    boxShadow: '0 8px 32px rgba(14, 165, 233, 0.15)',
+  },
+}));
+
 const statusConfig = {
-  open: { label: 'Open', variant: 'default' as const, color: 'status-open' },
-  assigned: { label: 'Assigned', variant: 'secondary' as const, color: 'status-assigned' },
-  completed: { label: 'Completed', variant: 'outline' as const, color: 'status-completed' },
-  pending: { label: 'Pending', variant: 'destructive' as const, color: 'status-pending' }
+  open: { label: 'Open', color: 'success' as const },
+  assigned: { label: 'Assigned', color: 'warning' as const },
+  completed: { label: 'Completed', color: 'info' as const },
+  pending: { label: 'Pending', color: 'error' as const }
 };
 
 const TaskCard = ({ task, isSelected, onClick }: TaskCardProps) => {
   const statusInfo = statusConfig[task.status];
 
   return (
-    <Card 
-      className={cn(
-        "cursor-pointer transition-all duration-200 hover:shadow-card",
-        isSelected && "ring-2 ring-primary shadow-elevated bg-gradient-card"
-      )}
-      onClick={onClick}
-    >
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between mb-3">
-          <h3 className="font-semibold text-foreground leading-tight flex-1 mr-2">
-            {task.title}
-            {task.urgent && (
-              <AlertCircle className="inline-block w-4 h-4 text-destructive ml-2" />
-            )}
-          </h3>
-          <Badge 
-            variant={statusInfo.variant}
-            className={cn(
-              "text-xs font-medium",
-              task.status === 'open' && "bg-status-open/10 text-status-open border-status-open/20",
-              task.status === 'assigned' && "bg-status-assigned/10 text-status-assigned border-status-assigned/20",
-              task.status === 'completed' && "bg-status-completed/10 text-status-completed border-status-completed/20",
-              task.status === 'pending' && "bg-status-pending/10 text-status-pending border-status-pending/20"
-            )}
-          >
-            {statusInfo.label}
-          </Badge>
-        </div>
+    <StyledCard isSelected={isSelected} onClick={onClick}>
+      <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+        <Stack spacing={2}>
+          {/* Title and Status */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 1 }}>
+            <Typography 
+              variant="h6" 
+              component="h3" 
+              sx={{ 
+                fontWeight: 600, 
+                fontSize: '1rem',
+                lineHeight: 1.3,
+                flex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.5
+              }}
+            >
+              {task.title}
+              {task.urgent && (
+                <PriorityHigh color="error" sx={{ fontSize: '1rem' }} />
+              )}
+            </Typography>
+            <Chip 
+              label={statusInfo.label}
+              color={statusInfo.color}
+              size="small"
+              variant="outlined"
+              sx={{ fontWeight: 500, minWidth: 'auto' }}
+            />
+          </Box>
 
-        <div className="space-y-2 text-sm text-muted-foreground">
-          <div className="flex items-center">
-            <MapPin className="w-4 h-4 mr-2 text-primary" />
-            <span className="truncate">{task.location}</span>
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <Calendar className="w-4 h-4 mr-2 text-primary" />
-              <span>{new Date(task.date).toLocaleDateString()}</span>
-            </div>
+          {/* Details */}
+          <Stack spacing={1}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <LocationOn color="primary" sx={{ fontSize: '1rem' }} />
+              <Typography 
+                variant="body2" 
+                color="text.secondary"
+                sx={{ 
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                {task.location}
+              </Typography>
+            </Box>
             
-            <div className="flex items-center font-semibold text-foreground">
-              <DollarSign className="w-4 h-4 mr-1 text-primary" />
-              <span>${task.budget}</span>
-            </div>
-          </div>
-        </div>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <CalendarToday color="primary" sx={{ fontSize: '1rem' }} />
+                <Typography variant="body2" color="text.secondary">
+                  {new Date(task.date).toLocaleDateString()}
+                </Typography>
+              </Box>
+              
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <AttachMoney color="primary" sx={{ fontSize: '1rem' }} />
+                <Typography 
+                  variant="body2" 
+                  sx={{ fontWeight: 600, color: 'text.primary' }}
+                >
+                  ${task.budget}
+                </Typography>
+              </Box>
+            </Box>
+          </Stack>
+        </Stack>
       </CardContent>
-    </Card>
+    </StyledCard>
   );
 };
 

@@ -1,7 +1,18 @@
 import React from 'react';
-import { MapPin, Navigation } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import {
+  Box,
+  Typography,
+  Button,
+  Stack,
+  Card,
+  CardContent,
+} from '@mui/material';
+import {
+  LocationOn,
+  Navigation,
+  Map as MapIcon,
+} from '@mui/icons-material';
+import { styled } from '@mui/material/styles';
 
 interface Task {
   id: string;
@@ -14,11 +25,41 @@ interface TaskMapProps {
   task: Task;
 }
 
+const MapContainer = styled(Box)(({ theme }) => ({
+  position: 'relative',
+  height: '250px',
+  background: 'linear-gradient(135deg, #e0f7fa, rgba(14, 165, 233, 0.1))',
+  borderRadius: theme.shape.borderRadius,
+  overflow: 'hidden',
+  border: `1px solid ${theme.palette.grey[300]}`,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginBottom: theme.spacing(2),
+}));
+
+const MapPlaceholder = styled(Box)(({ theme }) => ({
+  textAlign: 'center',
+  position: 'relative',
+  zIndex: 1,
+}));
+
+const MapIconCircle = styled(Box)(({ theme }) => ({
+  width: 64,
+  height: 64,
+  backgroundColor: theme.palette.primary.main,
+  borderRadius: '50%',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  margin: '0 auto',
+  marginBottom: theme.spacing(2),
+  boxShadow: '0 4px 12px rgba(14, 165, 233, 0.3)',
+}));
+
 const TaskMap = ({ task }: TaskMapProps) => {
   const [lat, lng] = task.coordinates;
 
-  // For now, using a placeholder map. In a real implementation, 
-  // you would integrate with Google Maps, Mapbox, or another mapping service
   const handleOpenInMaps = () => {
     const mapsUrl = `https://www.google.com/maps?q=${lat},${lng}`;
     window.open(mapsUrl, '_blank');
@@ -30,69 +71,95 @@ const TaskMap = ({ task }: TaskMapProps) => {
   };
 
   return (
-    <Card className="h-full">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center text-lg">
-          <MapPin className="w-5 h-5 mr-2 text-primary" />
+    <Stack spacing={2} sx={{ height: '100%' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+        <LocationOn color="primary" />
+        <Typography variant="h6" sx={{ fontWeight: 600 }}>
           Task Location
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="p-0">
-        {/* Placeholder Map Container */}
-        <div className="relative h-64 bg-gradient-accent rounded-lg mx-4 mb-4 overflow-hidden border border-border">
-          {/* Map Placeholder */}
-          <div className="absolute inset-0 bg-gradient-to-br from-brand-accent/50 to-primary/20 flex items-center justify-center">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-3">
-                <MapPin className="w-8 h-8 text-primary-foreground" />
-              </div>
-              <p className="text-sm font-medium text-foreground">{task.title}</p>
-              <p className="text-xs text-muted-foreground mt-1">{task.location}</p>
-              <p className="text-xs text-muted-foreground">
-                {lat.toFixed(4)}, {lng.toFixed(4)}
-              </p>
-            </div>
-          </div>
+        </Typography>
+      </Box>
 
-          {/* Interactive Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent pointer-events-none" />
-          
-          {/* Map Controls Placeholder */}
-          <div className="absolute top-2 right-2 space-y-1">
-            <div className="w-8 h-8 bg-card rounded shadow-sm border border-border"></div>
-            <div className="w-8 h-8 bg-card rounded shadow-sm border border-border"></div>
-          </div>
-        </div>
+      {/* Map Placeholder */}
+      <MapContainer>
+        <MapPlaceholder>
+          <MapIconCircle>
+            <LocationOn sx={{ fontSize: 32, color: 'white' }} />
+          </MapIconCircle>
+          <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 0.5 }}>
+            {task.title}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+            {task.location}
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            {lat.toFixed(4)}, {lng.toFixed(4)}
+          </Typography>
+        </MapPlaceholder>
 
-        {/* Action Buttons */}
-        <div className="px-4 pb-4 space-y-2">
-          <Button 
-            variant="outline" 
-            className="w-full justify-start"
-            onClick={handleOpenInMaps}
-          >
-            <MapPin className="w-4 h-4 mr-2" />
-            Open in Maps
-          </Button>
-          <Button 
-            variant="outline" 
-            className="w-full justify-start"
-            onClick={handleGetDirections}
-          >
-            <Navigation className="w-4 h-4 mr-2" />
-            Get Directions
-          </Button>
-        </div>
+        {/* Map Controls Placeholder */}
+        <Box sx={{ 
+          position: 'absolute', 
+          top: 8, 
+          right: 8, 
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 0.5
+        }}>
+          <Box sx={{ 
+            width: 32, 
+            height: 32, 
+            bgcolor: 'white', 
+            borderRadius: 1, 
+            boxShadow: 1,
+            border: '1px solid',
+            borderColor: 'grey.300'
+          }} />
+          <Box sx={{ 
+            width: 32, 
+            height: 32, 
+            bgcolor: 'white', 
+            borderRadius: 1, 
+            boxShadow: 1,
+            border: '1px solid',
+            borderColor: 'grey.300'
+          }} />
+        </Box>
+      </MapContainer>
 
-        {/* Location Details */}
-        <div className="px-4 pb-4">
-          <div className="bg-muted/30 rounded-lg p-3">
-            <h4 className="font-medium text-sm mb-1">Address</h4>
-            <p className="text-sm text-muted-foreground">{task.location}</p>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+      {/* Action Buttons */}
+      <Stack spacing={1}>
+        <Button
+          variant="outlined"
+          startIcon={<MapIcon />}
+          onClick={handleOpenInMaps}
+          fullWidth
+          sx={{ justifyContent: 'flex-start' }}
+        >
+          Open in Maps
+        </Button>
+        <Button
+          variant="outlined"
+          startIcon={<Navigation />}
+          onClick={handleGetDirections}
+          fullWidth
+          sx={{ justifyContent: 'flex-start' }}
+        >
+          Get Directions
+        </Button>
+      </Stack>
+
+      {/* Location Details */}
+      <Card variant="outlined" sx={{ mt: 'auto' }}>
+        <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.5 }}>
+            Address
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            {task.location}
+          </Typography>
+        </CardContent>
+      </Card>
+    </Stack>
   );
 };
 
