@@ -63,7 +63,7 @@ const TaskDetails = ({ task }: TaskDetailsProps) => {
           startIcon={<Edit />}
           sx={{ ml: 2 }}
         >
-          Edit
+          Change
         </Button>
       </Box>
 
