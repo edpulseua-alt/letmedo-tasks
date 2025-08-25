@@ -10,6 +10,8 @@ import {
   Chip,
   Rating,
   Divider,
+  Snackbar,
+  Alert,
 } from '@mui/material';
 import {
   Chat,
@@ -17,6 +19,9 @@ import {
   Star,
   CheckCircle,
 } from '@mui/icons-material';
+import TaskerProfileModal from './TaskerProfileModal';
+import TaskerChatModal from './TaskerChatModal';
+import TaskAssignmentModal from './TaskAssignmentModal';
 
 interface Tasker {
   id: string;
@@ -32,6 +37,10 @@ interface Tasker {
 interface TaskBiddersProps {
   taskId: string;
   taskers: Tasker[];
+  taskTitle: string;
+  taskBudget: number;
+  taskLocation: string;
+  taskUrgent?: boolean;
 }
 
 // Mock data for taskers/bidders
@@ -79,17 +88,71 @@ const getStatusConfig = (status: string) => {
   }
 };
 
-const TaskBidders = ({ taskId, taskers = mockTaskers }: TaskBiddersProps) => {
+const TaskBidders = ({ 
+  taskId, 
+  taskers = mockTaskers, 
+  taskTitle = "Sample Task",
+  taskBudget = 150,
+  taskLocation = "Seattle, WA",
+  taskUrgent = false
+}: TaskBiddersProps) => {
+  const [profileModalOpen, setProfileModalOpen] = React.useState(false);
+  const [chatModalOpen, setChatModalOpen] = React.useState(false);
+  const [assignmentModalOpen, setAssignmentModalOpen] = React.useState(false);
+  const [selectedTasker, setSelectedTasker] = React.useState<Tasker | null>(null);
+  const [snackbarOpen, setSnackbarOpen] = React.useState(false);
+  const [snackbarMessage, setSnackbarMessage] = React.useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = React.useState<'success' | 'error' | 'info'>('success');
+
+  const showSnackbar = (message: string, severity: 'success' | 'error' | 'info' = 'success') => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setSnackbarOpen(true);
+  };
+
   const handleViewProfile = (taskerId: string) => {
-    console.log('View profile for tasker:', taskerId);
+    const tasker = taskers.find(t => t.id === taskerId);
+    if (tasker) {
+      setSelectedTasker(tasker);
+      setProfileModalOpen(true);
+    }
   };
 
   const handleContact = (taskerId: string) => {
-    console.log('Contact tasker:', taskerId);
+    const tasker = taskers.find(t => t.id === taskerId);
+    if (tasker) {
+      setSelectedTasker(tasker);
+      setChatModalOpen(true);
+    }
   };
 
   const handleAssign = (taskerId: string) => {
-    console.log('Assign task to tasker:', taskerId);
+    const tasker = taskers.find(t => t.id === taskerId);
+    if (tasker) {
+      setSelectedTasker(tasker);
+      setAssignmentModalOpen(true);
+    }
+  };
+
+  const handleSendMessage = (message: string) => {
+    console.log('Sending message:', message);
+    showSnackbar('Message sent successfully!');
+  };
+
+  const handleConfirmAssignment = (assignmentData: any) => {
+    console.log('Assignment confirmed:', assignmentData);
+    showSnackbar(`Task successfully assigned to ${selectedTasker?.name}!`);
+    setAssignmentModalOpen(false);
+    
+    // Here you would typically update the task status and notify the backend
+    // For demo purposes, we'll just show a success message
+  };
+
+  const handleCloseModals = () => {
+    setProfileModalOpen(false);
+    setChatModalOpen(false);
+    setAssignmentModalOpen(false);
+    setSelectedTasker(null);
   };
 
   return (
@@ -208,6 +271,53 @@ const TaskBidders = ({ taskId, taskers = mockTaskers }: TaskBiddersProps) => {
           </CardContent>
         </Card>
       )}
+
+      {/* Modals */}
+      <TaskerProfileModal
+        open={profileModalOpen}
+        onClose={handleCloseModals}
+        tasker={selectedTasker}
+        onContact={handleContact}
+        onAssign={handleAssign}
+      />
+
+      <TaskerChatModal
+        open={chatModalOpen}
+        onClose={handleCloseModals}
+        tasker={selectedTasker}
+        taskTitle={taskTitle}
+        onSendMessage={handleSendMessage}
+      />
+
+      <TaskAssignmentModal
+        open={assignmentModalOpen}
+        onClose={handleCloseModals}
+        tasker={selectedTasker}
+        task={{
+          id: taskId,
+          title: taskTitle,
+          budget: taskBudget,
+          location: taskLocation,
+          urgent: taskUrgent
+        }}
+        onConfirmAssignment={handleConfirmAssignment}
+      />
+
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert 
+          onClose={() => setSnackbarOpen(false)} 
+          severity={snackbarSeverity}
+          variant="filled"
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Stack>
   );
 };

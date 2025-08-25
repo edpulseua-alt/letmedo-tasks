@@ -264,7 +264,14 @@ const MyTasks = () => {
 
                   {/* Taskers/Bidders */}
                   <Paper elevation={1} sx={{ p: 3, flex: 1, overflow: 'auto' }}>
-                    <TaskBidders taskId={selectedTask.id} taskers={[]} />
+                    <TaskBidders 
+                      taskId={selectedTask.id} 
+                      taskers={[]}
+                      taskTitle={selectedTask.title}
+                      taskBudget={selectedTask.budget}
+                      taskLocation={selectedTask.location}
+                      taskUrgent={selectedTask.urgent}
+                    />
                   </Paper>
                 </Box>
               </Box>
